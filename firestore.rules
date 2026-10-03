@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global catch-all default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'admin@buyjump.com' ||
+        request.auth.token.email == 'vithusan2553@gmail.com' ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isApprovedSeller() {
+      return isSignedIn() && (
+        isAdmin() ||
+        (exists(/databases/$(database)/documents/sellers/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/sellers/$(request.auth.uid)).data.status == 'approved')
+      );
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow read: if true;
+    }
+
+    // --- Users Collection ---
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isSignedIn();
+      allow update: if isOwner(userId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Sellers Collection ---
+    match /sellers/{sellerId} {
+      allow get: if isOwner(sellerId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && isOwner(sellerId);
+      allow update: if isOwner(sellerId) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // --- Products Collection ---
+    match /products/{productId} {
+      allow read: if true;
+      allow create: if isApprovedSeller() || isAdmin();
+      allow update: if isAdmin() || (
+        isApprovedSeller() && resource.data.sellerId == request.auth.uid
+      );
+      allow delete: if isAdmin() || (
+        isApprovedSeller() && resource.data.sellerId == request.auth.uid
+      );
+    }
+
+    // --- Orders Collection ---
+    match /orders/{orderId} {
+      allow get: if isAdmin() || (
+        isSignedIn() && (
+          resource.data.userId == request.auth.uid ||
+          (('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
+        )
+      );
+      allow list: if isAdmin() || (
+        isSignedIn() && (
+          resource.data.userId == request.auth.uid ||
+          (('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
+        )
+      );
+      allow create: if true; // Both registered and guest checkouts can create order documents
+      allow update: if isAdmin() || (
+        isSignedIn() && (
+          resource.data.userId == request.auth.uid ||
+          (('sellerId' in resource.data) && resource.data.sellerId == request.auth.uid)
+        )
+      );
+      allow delete: if isAdmin();
+    }
+
+    // --- WhatsApp Messages Collection ---
+    match /whatsapp_messages/{messageId} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

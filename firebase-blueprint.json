@@ -1,0 +1,129 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile document storing basic account and role information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "provider": { "type": "string", "enum": ["password", "google", "facebook", "other"] },
+        "role": { "type": "string", "enum": ["user", "seller", "admin"] },
+        "status": { "type": "string", "enum": ["active", "suspended", "pending"] },
+        "emailVerified": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "lastLoginAt": { "type": "string" }
+      },
+      "required": ["uid", "fullName", "email", "role", "status"]
+    },
+    "Seller": {
+      "title": "Seller",
+      "description": "Seller profile document storing store details and approval status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "businessName": { "type": "string", "maxLength": 150 },
+        "email": { "type": "string", "format": "email", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 30 },
+        "address": { "type": "string", "maxLength": 300 },
+        "photoURL": { "type": "string", "maxLength": 500 },
+        "provider": { "type": "string", "enum": ["password", "google", "facebook", "other"] },
+        "role": { "type": "string", "enum": ["seller"] },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected", "suspended"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "approvedAt": { "type": "string" },
+        "approvedBy": { "type": "string" }
+      },
+      "required": ["uid", "fullName", "businessName", "email", "phone", "role", "status"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Product document for marketplace listings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "sellerId": { "type": "string", "maxLength": 128 },
+        "sellerName": { "type": "string", "maxLength": 150 },
+        "name": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "category": { "type": "string", "maxLength": 100 },
+        "price": { "type": "number" },
+        "discountPrice": { "type": "number" },
+        "stock": { "type": "number" },
+        "imageUrl": { "type": "string", "maxLength": 1000 },
+        "status": { "type": "string", "enum": ["active", "draft", "hidden", "out_of_stock"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "sellerId", "sellerName", "name", "price", "stock", "status"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Order transaction document",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "userId": { "type": "string", "maxLength": 128 },
+        "customerName": { "type": "string", "maxLength": 100 },
+        "customerEmail": { "type": "string", "format": "email", "maxLength": 128 },
+        "customerPhone": { "type": "string", "maxLength": 30 },
+        "sellerId": { "type": "string", "maxLength": 128 },
+        "items": { "type": "array" },
+        "totalAmount": { "type": "number" },
+        "shippingAddress": { "type": "string", "maxLength": 500 },
+        "paymentMethod": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "enum": ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "customerName", "customerPhone", "totalAmount", "shippingAddress", "status"]
+    },
+    "WhatsAppMessage": {
+      "title": "WhatsAppMessage",
+      "description": "Logged Meta WhatsApp Cloud API communications",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "orderId": { "type": "string", "maxLength": 128 },
+        "customerId": { "type": "string", "maxLength": 128 },
+        "customerPhone": { "type": "string", "maxLength": 30 },
+        "messageType": { "type": "string", "maxLength": 50 },
+        "templateName": { "type": "string", "maxLength": 100 },
+        "status": { "type": "string", "enum": ["queued", "sent", "delivered", "read", "failed"] },
+        "whatsappMessageId": { "type": "string", "maxLength": 200 },
+        "errorMessage": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "customerPhone", "messageType", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "#/entities/User",
+      "description": "User account documents"
+    },
+    "/sellers/{uid}": {
+      "schema": "#/entities/Seller",
+      "description": "Seller business account documents"
+    },
+    "/products/{productId}": {
+      "schema": "#/entities/Product",
+      "description": "Marketplace products catalog"
+    },
+    "/orders/{orderId}": {
+      "schema": "#/entities/Order",
+      "description": "Customer purchase orders"
+    },
+    "/whatsapp_messages/{messageId}": {
+      "schema": "#/entities/WhatsAppMessage",
+      "description": "WhatsApp Cloud API message audit logs"
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Pukalavan Store",
+  "description": "BuyJump - Modern e-commerce app with multi-language support (English, Tamil, Sinhala), admin inventory management, WhatsApp order integration, and seamless shopping.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

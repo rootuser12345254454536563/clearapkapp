@@ -1,0 +1,20 @@
+# Gradle cache and local config
+.gradle/
+local.properties
+*.iml
+.idea/
+.externalNativeBuild
+.cxx/
+
+# Ignore intermediate build directories, but keep generated APK outputs visible in Project Files
+build/intermediates/
+build/tmp/
+build/generated/
+app/build/intermediates/
+app/build/tmp/
+app/build/generated/
+!app/build/outputs/
+!app/build/outputs/apk/
+!app/build/outputs/apk/debug/
+!app/build/outputs/apk/debug/app-debug.apk
+!*.apk
